@@ -222,8 +222,8 @@ def rotate_ov_proj(layer, model_type, head_num, head_dim):
     else:
         raise ValueError(f'Unknown model type {model_type}')
     
-    apply_exact_had_to_linear(v_proj, had_dim=head_dim, output=True)
-    apply_exact_had_to_linear(o_proj, had_dim=-1, output=False)
+    apply_exact_had_to_linear(v_proj, had_dim=head_dim, output=True) # Rotate R2: V projection per head
+    apply_exact_had_to_linear(o_proj, had_dim=-1, output=False) # Rotate R2.T
 
 
 @torch.inference_mode()
@@ -237,17 +237,17 @@ def rotate_model(model, args):
 
 
     model_type = model_utils.model_type_extractor(model)
-    rotate_embeddings(model, Q)
-    rotate_head(model, Q)
+    rotate_embeddings(model, Q) # Rotate the embeddings.
+    rotate_head(model, Q) # Rotate the head.
     utils.cleanup_memory()
     layers = model_utils.get_transformer_layers(model, 
                                                 model_type=model_type)
     for idx, layer in enumerate(tqdm.tqdm(layers, unit="layer", desc="Rotating")):
-        rotate_attention_inputs(layers[idx], Q, model_type)
-        rotate_attention_output(layers[idx], Q, model_type)
-        rotate_mlp_input(layers[idx], Q, model_type)
-        rotate_mlp_output(layers[idx], Q, model_type)
-        rotate_ov_proj(layers[idx], model_type, num_heads, head_dim)
+        rotate_attention_inputs(layers[idx], Q, model_type) # Rotate R1.T
+        rotate_attention_output(layers[idx], Q, model_type) # Rotate R1 for activation
+        rotate_mlp_input(layers[idx], Q, model_type) # Rotate R1.T
+        rotate_mlp_output(layers[idx], Q, model_type) # Rotate R1 for activation + R4.T 
+        rotate_ov_proj(layers[idx], model_type, num_heads, head_dim) # Rotate R2 each head's value projection
 
 
 @torch.inference_mode
