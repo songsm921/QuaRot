@@ -192,6 +192,13 @@ def gptq_fwrd(model, dataloader, dev, args):
                 ['mlp.up_proj.module', 'mlp.gate_proj.module'],
                 ['mlp.down_proj.module']
             ]
+    if args.rotate == False:
+        sequential = [
+                ['self_attn.k_proj', 'self_attn.v_proj', 'self_attn.q_proj'],
+                ['self_attn.o_proj'],
+                ['mlp.up_proj', 'mlp.gate_proj'],
+                ['mlp.down_proj']
+            ]
     for i in range(len(layers)):
         print(f'\nLayer {i}:', flush=True, end=' ')
         layer = layers[i].to(dev)

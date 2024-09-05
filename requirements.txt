@@ -1,3 +1,5 @@
+numpy==1.26.4
+matplotlib
 transformers==4.36.0
 torch==2.2.1
 sentencepiece==0.2.0

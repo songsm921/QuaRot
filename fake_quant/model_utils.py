@@ -64,7 +64,7 @@ def get_opt(model_name):
 def get_model(
     model_name, hf_token=None
 ):
-    if 'llama' in model_name:
+    if 'llama' in model_name or 'Llama' in model_name:
         return get_llama(model_name, hf_token)
     elif 'opt' in model_name:
         return get_opt(model_name)
@@ -239,10 +239,8 @@ def capture_layer_io(model_type, layer, layer_input):
         raise ValueError(f'Unknown model type {model_type}')
 
     # Process each sequence in the batch one by one to avoid OOM.
-    for seq_idx in range(layer_input.shape[0]):
-        # Extract the current sequence across all dimensions.
-        seq = layer_input[seq_idx:seq_idx + 1].to(utils.DEV)
-        # Perform a forward pass for the current sequence.
+    for seq_idx in range(len(layer_input)):
+        seq = layer_input[seq_idx:seq_idx + 1][0].to(utils.DEV)
         layer(seq)
 
     # After processing all sequences, concatenate the accumulated inputs for each sub-layer across the batch.
